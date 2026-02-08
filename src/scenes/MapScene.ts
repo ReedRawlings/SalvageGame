@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { COLORS, GAME_WIDTH, GAME_HEIGHT } from '../utils/Constants';
+import { COLORS, DEPTH, GAME_WIDTH, GAME_HEIGHT } from '../utils/Constants';
 import { Player } from '../entities/Player';
 import { MapGenerator, MapNode } from '../systems/MapGenerator';
 import { MapUI } from '../ui/MapUI';
@@ -36,29 +36,29 @@ export class MapScene extends Phaser.Scene {
     // Background
     this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, COLORS.background);
 
-    // Title
+    // Title (above scroll cover)
     this.add.text(GAME_WIDTH / 2, 15, 'THE OUTER JUNKYARD', {
       fontFamily: 'monospace',
       fontSize: '18px',
       color: '#e94560',
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setDepth(DEPTH.overlay + 1);
 
-    // Player stats
+    // Player stats (above scroll cover)
     this.add.text(20, 10, `HP: ${this.player.health}/${this.player.maxHealth}`, {
       fontFamily: 'monospace',
       fontSize: '12px',
       color: '#ff6666',
-    });
+    }).setDepth(DEPTH.overlay + 1);
     this.add.text(20, 28, `CIRCUITS: ${this.player.circuits}`, {
       fontFamily: 'monospace',
       fontSize: '12px',
       color: '#cccccc',
-    });
+    }).setDepth(DEPTH.overlay + 1);
     this.add.text(20, 46, `COREs: ${this.player.cores}`, {
       fontFamily: 'monospace',
       fontSize: '12px',
       color: '#f5a623',
-    });
+    }).setDepth(DEPTH.overlay + 1);
 
     // Render map
     this.mapUI = new MapUI(this);
