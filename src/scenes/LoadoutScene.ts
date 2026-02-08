@@ -68,6 +68,7 @@ export class LoadoutScene extends Phaser.Scene {
     });
 
     this.createButton(GAME_WIDTH / 2 + 140, GAME_HEIGHT - 50, 'LAUNCH RUN', () => {
+      this.progMgr.startNewRun();
       SaveManager.save(this.player);
       this.scene.start('MapScene', { player: this.player });
     });

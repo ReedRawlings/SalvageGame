@@ -67,6 +67,17 @@ export class EquipmentManager {
       }
     }
 
+    // Add cards picked up during this run
+    cards.push(...this.player.runDeckCardIds);
+
+    // Remove cards that were removed during this run
+    for (const removedId of this.player.removedCardIds) {
+      const idx = cards.indexOf(removedId);
+      if (idx >= 0) {
+        cards.splice(idx, 1);
+      }
+    }
+
     return cards;
   }
 

@@ -172,4 +172,14 @@ export class DeckManager {
     const id = droneIds[Math.floor(Math.random() * droneIds.length)];
     return this.getCardById(id);
   }
+
+  getRewardCardPool(count: number): Card[] {
+    const rewardableIds = Object.keys(cardsData).filter(id => {
+      const c = (cardsData as Record<string, CardData>)[id];
+      return !c.isBasic;
+    });
+    const shuffled = [...rewardableIds].sort(() => Math.random() - 0.5);
+    const picks = shuffled.slice(0, count);
+    return picks.map(id => this.getCardById(id)!).filter(Boolean);
+  }
 }

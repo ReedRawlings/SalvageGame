@@ -285,50 +285,127 @@ export class CombatScene extends Phaser.Scene {
     if (coreReward > 0) this.player.addCores(coreReward);
 
     // Victory overlay
-    const overlay = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.7)
+    this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.7)
       .setDepth(80);
 
-    this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 60, 'VICTORY', {
+    this.add.text(GAME_WIDTH / 2, 100, 'VICTORY', {
       fontFamily: 'monospace',
       fontSize: '42px',
       color: '#44ff44',
     }).setOrigin(0.5).setDepth(81);
 
-    this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, `+${circuitReward} CIRCUITS`, {
+    this.add.text(GAME_WIDTH / 2, 150, `+${circuitReward} CIRCUITS${coreReward > 0 ? `  +${coreReward} COREs` : ''}`, {
       fontFamily: 'monospace',
-      fontSize: '18px',
+      fontSize: '16px',
       color: '#cccccc',
     }).setOrigin(0.5).setDepth(81);
 
-    if (coreReward > 0) {
-      this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 30, `+${coreReward} COREs`, {
-        fontFamily: 'monospace',
-        fontSize: '18px',
-        color: '#f5a623',
-      }).setOrigin(0.5).setDepth(81);
+    // Card reward selection
+    this.add.text(GAME_WIDTH / 2, 195, 'CHOOSE A CARD TO ADD TO YOUR DECK', {
+      fontFamily: 'monospace',
+      fontSize: '14px',
+      color: '#888888',
+    }).setOrigin(0.5).setDepth(81);
+
+    const rewardCards = this.deck.getRewardCardPool(3);
+    const cardSpacing = 160;
+    const startX = GAME_WIDTH / 2 - (rewardCards.length - 1) * cardSpacing / 2;
+
+    for (let i = 0; i < rewardCards.length; i++) {
+      const card = rewardCards[i];
+      this.createRewardCard(startX + i * cardSpacing, 370, card, coreReward);
     }
 
-    // Card reward (offer a random card)
-    this.createVictoryButton(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 100, 'CONTINUE', () => {
-      if (isBoss) {
-        this.scene.start('PostRunScene', {
-          player: this.player,
-          victory: true,
-          floorsCleared: this.mapData.floorsCleared,
-          enemiesDefeated: (this.mapData.enemiesDefeated ?? 0) + this.combat.enemies.length,
-          coresEarned: (this.mapData.coresEarned ?? 0) + coreReward,
-        });
-      } else {
-        this.scene.start('MapScene', {
-          player: this.player,
-          map: this.mapData.map,
-          currentNodeId: this.mapData.currentNodeId,
-          floorsCleared: this.mapData.floorsCleared,
-          enemiesDefeated: (this.mapData.enemiesDefeated ?? 0) + this.combat.enemies.length,
-          coresEarned: (this.mapData.coresEarned ?? 0) + coreReward,
-        });
-      }
+    // Skip button
+    this.createVictoryButton(GAME_WIDTH / 2, GAME_HEIGHT - 60, 'SKIP — No card', () => {
+      this.proceedFromVictory(coreReward);
     });
+  }
+
+  private createRewardCard(x: number, y: number, card: Card, coreReward: number): void {
+    const container = this.add.container(x, y).setDepth(82);
+
+    const bg = this.add.rectangle(0, 0, 140, 200, 0x1a1a2e)
+      .setStrokeStyle(2, card.getColorTint());
+    container.add(bg);
+
+    // Color stripe
+    container.add(this.add.rectangle(0, -92, 132, 12, card.getColorTint()));
+
+    // Cost
+    container.add(this.add.text(-58, -88, `${card.cost}`, {
+      fontFamily: 'monospace', fontSize: '16px', color: '#f5a623',
+    }));
+
+    // Name
+    container.add(this.add.text(0, -72, card.name, {
+      fontFamily: 'monospace', fontSize: '12px', color: '#ffffff',
+    }).setOrigin(0.5));
+
+    // Type label
+    container.add(this.add.text(0, -55, card.type.toUpperCase(), {
+      fontFamily: 'monospace', fontSize: '9px', color: '#888888',
+    }).setOrigin(0.5));
+
+    // Stats
+    let statY = -25;
+    if (card.damage > 0) {
+      container.add(this.add.text(0, statY, `DMG: ${card.damage}${card.hits > 1 ? ` x${card.hits}` : ''}`, {
+        fontFamily: 'monospace', fontSize: '13px', color: '#ff6666',
+      }).setOrigin(0.5));
+      statY += 20;
+    }
+    if (card.block > 0) {
+      container.add(this.add.text(0, statY, `BLK: ${card.block}`, {
+        fontFamily: 'monospace', fontSize: '13px', color: '#6688ff',
+      }).setOrigin(0.5));
+      statY += 20;
+    }
+
+    // Description
+    container.add(this.add.text(0, 30, card.description, {
+      fontFamily: 'monospace', fontSize: '9px', color: '#aaaaaa',
+      wordWrap: { width: 120 }, align: 'center',
+    }).setOrigin(0.5, 0));
+
+    container.setSize(140, 200);
+    container.setInteractive({ useHandCursor: true });
+
+    container.on('pointerover', () => {
+      bg.setStrokeStyle(3, COLORS.accent);
+      this.tweens.add({ targets: container, scaleX: 1.08, scaleY: 1.08, duration: 100 });
+    });
+    container.on('pointerout', () => {
+      bg.setStrokeStyle(2, card.getColorTint());
+      this.tweens.add({ targets: container, scaleX: 1, scaleY: 1, duration: 100 });
+    });
+    container.on('pointerdown', () => {
+      this.player.runDeckCardIds.push(card.id);
+      this.anim.sparkEffect(x, y, COLORS.gold);
+      this.proceedFromVictory(coreReward);
+    });
+  }
+
+  private proceedFromVictory(coreReward: number): void {
+    const isBoss = this.mapData.isBoss;
+    if (isBoss) {
+      this.scene.start('PostRunScene', {
+        player: this.player,
+        victory: true,
+        floorsCleared: this.mapData.floorsCleared,
+        enemiesDefeated: (this.mapData.enemiesDefeated ?? 0) + this.combat.enemies.length,
+        coresEarned: (this.mapData.coresEarned ?? 0) + coreReward,
+      });
+    } else {
+      this.scene.start('MapScene', {
+        player: this.player,
+        map: this.mapData.map,
+        currentNodeId: this.mapData.currentNodeId,
+        floorsCleared: this.mapData.floorsCleared,
+        enemiesDefeated: (this.mapData.enemiesDefeated ?? 0) + this.combat.enemies.length,
+        coresEarned: (this.mapData.coresEarned ?? 0) + coreReward,
+      });
+    }
   }
 
   private handleDefeat(): void {

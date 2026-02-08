@@ -38,6 +38,8 @@ export class Player {
   public ownedEquipment: Equipment[];
   public statusEffects: Map<string, number>;
   public runCount: number;
+  public runDeckCardIds: string[];
+  public removedCardIds: string[];
 
   constructor() {
     this.maxHealth = BASE_HEALTH;
@@ -56,6 +58,8 @@ export class Player {
     this.ownedEquipment = [];
     this.statusEffects = new Map();
     this.runCount = 0;
+    this.runDeckCardIds = [];
+    this.removedCardIds = [];
 
     for (const slot of EQUIPMENT_SLOTS) {
       this.equipment.set(slot, null);

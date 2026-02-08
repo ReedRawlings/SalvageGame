@@ -44,6 +44,8 @@ export class ProgressionManager {
     this.player.circuits = 0;
     this.player.block = 0;
     this.player.statusEffects.clear();
+    this.player.runDeckCardIds = [];
+    this.player.removedCardIds = [];
   }
 
   canRechargeEquipment(piece: Equipment): boolean {
