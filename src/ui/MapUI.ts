@@ -121,6 +121,9 @@ export class MapUI {
   private nodeUIs: MapNodeUI[] = [];
   private lines: Phaser.GameObjects.Line[] = [];
   private scrollContainer: Phaser.GameObjects.Container;
+  private scrollMinY: number = 0;
+  private scrollMaxY: number = 0;
+  private headerCover?: Phaser.GameObjects.Rectangle;
   public onNodeSelect?: (node: MapNode) => void;
 
   constructor(scene: Phaser.Scene) {
@@ -189,6 +192,62 @@ export class MapUI {
         this.nodeUIs.push(nodeUI);
       }
     }
+
+    // Set up scrolling if map content exceeds viewport
+    const contentBottom = (map.length - 1) * rowHeight + offsetY + 50;
+    if (contentBottom > GAME_HEIGHT) {
+      this.scrollMinY = -(contentBottom - GAME_HEIGHT);
+      this.scrollMaxY = 0;
+      this.setupScrolling(65);
+      this.autoScrollToCurrentRow(map, currentNodeId, rowHeight, offsetY);
+    }
+  }
+
+  private setupScrolling(headerHeight: number): void {
+    // Header cover to hide scrolled content behind title/stats
+    this.headerCover = this.scene.add.rectangle(
+      GAME_WIDTH / 2, headerHeight / 2,
+      GAME_WIDTH, headerHeight,
+      COLORS.background
+    ).setDepth(DEPTH.overlay);
+
+    // Mouse wheel scrolling
+    this.scene.input.on('wheel', (_pointer: Phaser.Input.Pointer, _gameObjects: Phaser.GameObjects.GameObject[], _deltaX: number, deltaY: number) => {
+      this.scrollBy(-deltaY * 0.3);
+    });
+
+    // Keyboard scrolling
+    this.scene.input.keyboard?.on('keydown-UP', () => this.scrollBy(30));
+    this.scene.input.keyboard?.on('keydown-DOWN', () => this.scrollBy(-30));
+  }
+
+  private scrollBy(amount: number): void {
+    this.scrollContainer.y = Phaser.Math.Clamp(
+      this.scrollContainer.y + amount,
+      this.scrollMinY,
+      this.scrollMaxY
+    );
+  }
+
+  private autoScrollToCurrentRow(map: MapNode[][], currentNodeId: string | null, rowHeight: number, offsetY: number): void {
+    if (!currentNodeId) return;
+
+    let currentRow = 0;
+    for (const row of map) {
+      for (const node of row) {
+        if (node.id === currentNodeId) {
+          currentRow = node.row;
+        }
+      }
+    }
+
+    // Scroll to center the next row in the viewport
+    const targetY = (currentRow + 1) * rowHeight + offsetY;
+    this.scrollContainer.y = Phaser.Math.Clamp(
+      -(targetY - GAME_HEIGHT / 2),
+      this.scrollMinY,
+      this.scrollMaxY
+    );
   }
 
   clear(): void {
@@ -201,5 +260,6 @@ export class MapUI {
   destroy(): void {
     this.clear();
     this.scrollContainer.destroy();
+    if (this.headerCover) this.headerCover.destroy();
   }
 }
