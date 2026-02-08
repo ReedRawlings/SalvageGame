@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
-import { COLORS, GAME_WIDTH, GAME_HEIGHT } from '../utils/Constants';
+import { COLORS, GAME_WIDTH, GAME_HEIGHT, EquipmentSlot } from '../utils/Constants';
 import { Player } from '../entities/Player';
 import { Card } from '../entities/Card';
+import { Drone } from '../entities/Drone';
 import { DeckManager } from '../systems/DeckManager';
 import { DroneManager } from '../systems/DroneManager';
 import { CombatManager, CombatPhase } from '../systems/CombatManager';
@@ -30,6 +31,8 @@ export class CombatScene extends Phaser.Scene {
   private anim!: AnimationHelper;
 
   private endTurnBtn!: Phaser.GameObjects.Container;
+  private equipBtn!: Phaser.GameObjects.Container;
+  private equipOverlay: Phaser.GameObjects.GameObject[] = [];
   private selectedTarget: Enemy | null = null;
   private isProcessing: boolean = false;
 
@@ -75,8 +78,9 @@ export class CombatScene extends Phaser.Scene {
     this.handUI = new HandUI(this);
     this.handUI.onCardPlay = (card: Card) => this.handleCardPlay(card);
 
-    // End turn button
+    // Buttons
     this.endTurnBtn = this.createEndTurnButton();
+    this.equipBtn = this.createEquipButton();
 
     // Start combat
     this.combat.startCombat();
@@ -116,8 +120,12 @@ export class CombatScene extends Phaser.Scene {
       this.drones.getFieldDroneCount()
     );
 
-    // Update end turn button visibility
+    // Update button visibility
     this.endTurnBtn.setVisible(this.combat.phase === 'player_turn');
+    const canEquip = this.combat.phase === 'player_turn'
+      && this.drones.getFieldDroneCount() > 0
+      && this.equipMgr.getEquippedSlots().length > 0;
+    this.equipBtn.setVisible(canEquip);
   }
 
   private handleCardPlay(card: Card): void {
@@ -449,6 +457,210 @@ export class CombatScene extends Phaser.Scene {
     container.on('pointerover', () => bg.setFillStyle(COLORS.accentAlt));
     container.on('pointerout', () => bg.setFillStyle(COLORS.panel));
     container.on('pointerdown', callback);
+  }
+
+  private createEquipButton(): Phaser.GameObjects.Container {
+    const container = this.add.container(GAME_WIDTH - 100, 445);
+
+    const bg = this.add.rectangle(0, 0, 140, 36, 0x225522)
+      .setStrokeStyle(2, COLORS.drone);
+    container.add(bg);
+
+    const text = this.add.text(0, 0, 'EQUIP DRONE', {
+      fontFamily: 'monospace',
+      fontSize: '13px',
+      color: '#66ffcc',
+    }).setOrigin(0.5);
+    container.add(text);
+
+    container.setSize(140, 36);
+    container.setInteractive({ useHandCursor: true });
+    container.setDepth(50);
+
+    container.on('pointerover', () => bg.setFillStyle(0x337733));
+    container.on('pointerout', () => bg.setFillStyle(0x225522));
+    container.on('pointerdown', () => this.showDroneEquipSelection());
+
+    return container;
+  }
+
+  private clearEquipOverlay(): void {
+    for (const obj of this.equipOverlay) {
+      obj.destroy();
+    }
+    this.equipOverlay = [];
+  }
+
+  private showDroneEquipSelection(): void {
+    if (this.isProcessing) return;
+    this.clearEquipOverlay();
+
+    const fieldDrones = this.drones.getFieldDrones();
+    if (fieldDrones.length === 0) return;
+
+    // Dim background
+    const bg = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.6)
+      .setDepth(80).setInteractive();
+    this.equipOverlay.push(bg);
+
+    const title = this.add.text(GAME_WIDTH / 2, 80, 'SELECT A DRONE TO EQUIP', {
+      fontFamily: 'monospace', fontSize: '20px', color: '#66ffcc',
+    }).setOrigin(0.5).setDepth(81);
+    this.equipOverlay.push(title);
+
+    const spacing = 80;
+    const startX = GAME_WIDTH / 2 - ((fieldDrones.length - 1) * spacing) / 2;
+
+    for (let i = 0; i < fieldDrones.length; i++) {
+      const drone = fieldDrones[i];
+      const dx = startX + i * spacing;
+      const dy = 180;
+
+      const card = this.add.container(dx, dy).setDepth(82);
+      const cardBg = this.add.rectangle(0, 0, 65, 75, 0x1a1a2e)
+        .setStrokeStyle(2, COLORS.drone);
+      card.add(cardBg);
+
+      const symbol = this.getDroneSymbol(drone.type);
+      card.add(this.add.text(0, -18, symbol, {
+        fontFamily: 'monospace', fontSize: '20px', color: '#ffffff',
+      }).setOrigin(0.5));
+
+      card.add(this.add.text(0, 8, drone.type.toUpperCase(), {
+        fontFamily: 'monospace', fontSize: '8px', color: '#aaaaaa',
+      }).setOrigin(0.5));
+
+      card.add(this.add.text(0, 22, drone.level > 1 ? 'Lv2' : 'Lv1', {
+        fontFamily: 'monospace', fontSize: '8px', color: '#ffcc44',
+      }).setOrigin(0.5));
+
+      card.setSize(65, 75);
+      card.setInteractive({ useHandCursor: true });
+
+      card.on('pointerover', () => cardBg.setStrokeStyle(3, COLORS.accent));
+      card.on('pointerout', () => cardBg.setStrokeStyle(2, COLORS.drone));
+      card.on('pointerdown', () => {
+        this.clearEquipOverlay();
+        this.showSlotSelection(drone);
+      });
+
+      this.equipOverlay.push(card);
+    }
+
+    // Cancel button
+    const cancel = this.createOverlayButton(GAME_WIDTH / 2, GAME_HEIGHT - 80, 'CANCEL', () => {
+      this.clearEquipOverlay();
+    });
+    this.equipOverlay.push(cancel);
+  }
+
+  private showSlotSelection(drone: Drone): void {
+    const slots = this.equipMgr.getEquippedSlots();
+    if (slots.length === 0) return;
+
+    const bg = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.6)
+      .setDepth(80).setInteractive();
+    this.equipOverlay.push(bg);
+
+    const title = this.add.text(GAME_WIDTH / 2, 80, `EQUIP ${drone.type.toUpperCase()} DRONE TO SLOT`, {
+      fontFamily: 'monospace', fontSize: '18px', color: '#66ffcc',
+    }).setOrigin(0.5).setDepth(81);
+    this.equipOverlay.push(title);
+
+    const spacing = 140;
+    const startX = GAME_WIDTH / 2 - ((slots.length - 1) * spacing) / 2;
+
+    for (let i = 0; i < slots.length; i++) {
+      const slot = slots[i];
+      const piece = this.player.equipment.get(slot);
+      if (!piece) continue;
+
+      const sx = startX + i * spacing;
+      const sy = 200;
+
+      const card = this.add.container(sx, sy).setDepth(82);
+      const alreadyEquipped = piece.isSupercharged();
+
+      const cardBg = this.add.rectangle(0, 0, 120, 100,
+        alreadyEquipped ? 0x332200 : 0x1a1a2e
+      ).setStrokeStyle(2, alreadyEquipped ? 0xffaa00 : COLORS.accentAlt);
+      card.add(cardBg);
+
+      card.add(this.add.text(0, -30, slot.toUpperCase(), {
+        fontFamily: 'monospace', fontSize: '12px', color: '#ffffff',
+      }).setOrigin(0.5));
+
+      card.add(this.add.text(0, -10, piece.name, {
+        fontFamily: 'monospace', fontSize: '10px', color: '#aaaaaa',
+      }).setOrigin(0.5));
+
+      if (alreadyEquipped) {
+        card.add(this.add.text(0, 10, `[${piece.equippedDroneType}]`, {
+          fontFamily: 'monospace', fontSize: '9px', color: '#ffaa00',
+        }).setOrigin(0.5));
+
+        card.add(this.add.text(0, 28, 'SUPERCHARGED', {
+          fontFamily: 'monospace', fontSize: '8px', color: '#ffaa00',
+        }).setOrigin(0.5));
+      }
+
+      card.setSize(120, 100);
+      card.setInteractive({ useHandCursor: true });
+
+      card.on('pointerover', () => cardBg.setStrokeStyle(3, COLORS.accent));
+      card.on('pointerout', () => cardBg.setStrokeStyle(2, alreadyEquipped ? 0xffaa00 : COLORS.accentAlt));
+      card.on('pointerdown', () => {
+        // If already has a drone, unequip it first
+        if (alreadyEquipped) {
+          this.combat.unequipDroneFromSlot(slot);
+        }
+        const success = this.combat.equipDroneToSlot(drone, slot);
+        this.clearEquipOverlay();
+        if (success) {
+          this.anim.floatText(GAME_WIDTH / 2, 350,
+            `${drone.type.toUpperCase()} DRONE → ${slot.toUpperCase()}`, '#66ffcc');
+        } else {
+          this.anim.floatText(GAME_WIDTH / 2, 350, 'EQUIP FAILED', '#ff4444');
+        }
+        this.renderState();
+      });
+
+      this.equipOverlay.push(card);
+    }
+
+    // Cancel
+    const cancel = this.createOverlayButton(GAME_WIDTH / 2, GAME_HEIGHT - 80, 'CANCEL', () => {
+      this.clearEquipOverlay();
+    });
+    this.equipOverlay.push(cancel);
+  }
+
+  private createOverlayButton(x: number, y: number, label: string, callback: () => void): Phaser.GameObjects.Container {
+    const container = this.add.container(x, y).setDepth(82);
+    const bg = this.add.rectangle(0, 0, 160, 40, COLORS.panel)
+      .setStrokeStyle(2, COLORS.accent);
+    container.add(bg);
+    container.add(this.add.text(0, 0, label, {
+      fontFamily: 'monospace', fontSize: '14px', color: '#ffffff',
+    }).setOrigin(0.5));
+    container.setSize(160, 40);
+    container.setInteractive({ useHandCursor: true });
+    container.on('pointerover', () => bg.setFillStyle(COLORS.accentAlt));
+    container.on('pointerout', () => bg.setFillStyle(COLORS.panel));
+    container.on('pointerdown', callback);
+    return container;
+  }
+
+  private getDroneSymbol(type: string): string {
+    switch (type) {
+      case 'attack': return '⚔';
+      case 'shield': return '🛡';
+      case 'repair': return '+';
+      case 'siphon': return '◈';
+      case 'overload': return '💣';
+      case 'decoy': return '◎';
+      default: return '?';
+    }
   }
 
   private delay(ms: number): Promise<void> {

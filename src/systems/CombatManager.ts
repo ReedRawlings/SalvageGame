@@ -1,10 +1,12 @@
 import { Player } from '../entities/Player';
 import { Enemy } from '../entities/Enemy';
 import { Card } from '../entities/Card';
+import { Drone } from '../entities/Drone';
 import { DeckManager } from './DeckManager';
 import { DroneManager } from './DroneManager';
 import { EnemyAI, EnemyTurnResult } from './EnemyAI';
 import { EquipmentManager } from './EquipmentManager';
+import { EquipmentSlot } from '../utils/Constants';
 
 export type CombatPhase = 'player_turn' | 'drone_phase' | 'enemy_turn' | 'victory' | 'defeat';
 
@@ -319,6 +321,47 @@ export class CombatManager {
         this.drones.summonRandom();
         result.dronesAffected = 2;
         break;
+
+      // Injected card effects (from drone equip)
+      case 'charged_strike':
+        if (target) {
+          const droneBonus = this.drones.getFieldDroneCount() * 2;
+          result.damageDealt += target.takeDamage(droneBonus);
+          result.message = `Charged Strike +${droneBonus} drone bonus`;
+        }
+        break;
+
+      case 'drone_barrier':
+        // Block is handled by base card.block. Battery restore happens if no damage taken.
+        result.message = 'Drone Barrier deployed';
+        break;
+
+      case 'field_repair':
+        this.player.heal(card.healAmount ?? 5);
+        result.healed += card.healAmount ?? 5;
+        this.drones.restoreAllBatteries(1);
+        result.dronesAffected = this.drones.getFieldDroneCount();
+        result.message = `Healed ${card.healAmount ?? 5} HP, restored drone batteries`;
+        break;
+
+      case 'siphon_draw': {
+        // Discard 1, draw 2
+        if (this.deck.hand.length > 0) {
+          const toDiscard = this.deck.hand[this.deck.hand.length - 1];
+          this.deck.discardCard(toDiscard);
+        }
+        const drawn = this.deck.draw(2);
+        result.cardsDrawn = drawn.length;
+        result.message = 'Discarded 1, drew 2';
+        break;
+      }
+
+      case 'overload_bomb':
+        if (target) {
+          result.damageDealt += target.takeDamage(card.damage);
+          result.message = `Ticking Bomb dealt ${card.damage} damage`;
+        }
+        break;
     }
   }
 
@@ -432,5 +475,44 @@ export class CombatManager {
 
   isOver(): boolean {
     return this.phase === 'victory' || this.phase === 'defeat';
+  }
+
+  /**
+   * Equip a field drone to an equipment slot.
+   * This supercharges the equipment and injects temporary cards.
+   */
+  equipDroneToSlot(drone: Drone, slot: EquipmentSlot): boolean {
+    if (this.phase !== 'player_turn') return false;
+
+    // Must be a field drone (not already equipped)
+    if (drone.isEquipped) return false;
+
+    // Must have equipment in the target slot
+    if (!this.equipment.equipDroneToSlot(drone, slot)) return false;
+
+    // Move drone from field to equipped state
+    this.drones.equipDroneToSlot(drone, slot);
+
+    // Inject cards for this drone type
+    this.deck.injectCardsForSlot(slot, drone.type);
+
+    return true;
+  }
+
+  /**
+   * Unequip a drone from an equipment slot.
+   * Removes supercharge and injected cards.
+   */
+  unequipDroneFromSlot(slot: EquipmentSlot): boolean {
+    // Remove supercharge from equipment
+    this.equipment.unequipDroneFromSlot(slot);
+
+    // Remove injected cards
+    this.deck.removeInjectedCardsForSlot(slot);
+
+    // Unequip from drone manager (returns to field or is destroyed)
+    this.drones.unequipDroneFromSlot(slot);
+
+    return true;
   }
 }

@@ -1,6 +1,7 @@
 import { Equipment, EquipmentData } from '../entities/Equipment';
 import { Player } from '../entities/Player';
 import { Card, CardData } from '../entities/Card';
+import { Drone } from '../entities/Drone';
 import { EquipmentSlot, EquipmentFamily } from '../utils/Constants';
 import equipmentData from '../data/equipment.json';
 import cardsData from '../data/cards.json';
@@ -124,5 +125,39 @@ export class EquipmentManager {
     const all = this.getAllAvailableEquipment().filter(e => e.cost > 0);
     const shuffled = [...all].sort(() => Math.random() - 0.5);
     return shuffled.slice(0, count);
+  }
+
+  /**
+   * Equip a drone to an equipment slot, marking the equipment as supercharged.
+   * Returns true if the slot has equipment to supercharge.
+   */
+  equipDroneToSlot(drone: Drone, slot: EquipmentSlot): boolean {
+    const piece = this.player.equipment.get(slot);
+    if (!piece) return false;
+    piece.equipDrone(drone.type);
+    return true;
+  }
+
+  /**
+   * Unequip a drone from an equipment slot, removing supercharge.
+   */
+  unequipDroneFromSlot(slot: EquipmentSlot): void {
+    const piece = this.player.equipment.get(slot);
+    if (piece) {
+      piece.unequipDrone();
+    }
+  }
+
+  /**
+   * Get all slots that have equipment (valid targets for drone equip).
+   */
+  getEquippedSlots(): EquipmentSlot[] {
+    const slots: EquipmentSlot[] = [];
+    for (const [slot, piece] of this.player.equipment) {
+      if (piece) {
+        slots.push(slot);
+      }
+    }
+    return slots;
   }
 }

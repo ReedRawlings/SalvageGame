@@ -1,5 +1,15 @@
 import { Card, CardData } from '../entities/Card';
+import { EquipmentSlot } from '../utils/Constants';
 import cardsData from '../data/cards.json';
+
+// Map drone type → injected card IDs
+const DRONE_INJECT_MAP: Record<string, string[]> = {
+  attack: ['injected_charged_strike'],
+  shield: ['injected_drone_barrier'],
+  repair: ['injected_field_repair'],
+  siphon: ['injected_siphon_draw'],
+  overload: ['injected_overload_bomb'],
+};
 
 export class DeckManager {
   public drawPile: Card[];
@@ -176,10 +186,43 @@ export class DeckManager {
   getRewardCardPool(count: number): Card[] {
     const rewardableIds = Object.keys(cardsData).filter(id => {
       const c = (cardsData as Record<string, CardData>)[id];
-      return !c.isBasic;
+      return !c.isBasic && !c.isInjected;
     });
     const shuffled = [...rewardableIds].sort(() => Math.random() - 0.5);
     const picks = shuffled.slice(0, count);
     return picks.map(id => this.getCardById(id)!).filter(Boolean);
+  }
+
+  /**
+   * Inject temporary cards into the deck when a drone is equipped to a slot.
+   * Cards are tagged with sourceSlot and sourceDroneType for later removal.
+   */
+  injectCardsForSlot(slot: EquipmentSlot, droneType: string): Card[] {
+    const cardIds = DRONE_INJECT_MAP[droneType];
+    if (!cardIds) return [];
+
+    const injected: Card[] = [];
+    for (const id of cardIds) {
+      const card = this.getCardById(id);
+      if (card) {
+        card.isTemporary = true;
+        card.sourceSlot = slot;
+        card.sourceDroneType = droneType;
+        this.discardPile.push(card);
+        injected.push(card);
+      }
+    }
+    return injected;
+  }
+
+  /**
+   * Remove all injected cards for a given slot (when drone is unequipped).
+   */
+  removeInjectedCardsForSlot(slot: EquipmentSlot): void {
+    const isTagged = (c: Card) => c.sourceSlot === slot;
+    this.drawPile = this.drawPile.filter(c => !isTagged(c));
+    this.hand = this.hand.filter(c => !isTagged(c));
+    this.discardPile = this.discardPile.filter(c => !isTagged(c));
+    this.exhaustPile = this.exhaustPile.filter(c => !isTagged(c));
   }
 }

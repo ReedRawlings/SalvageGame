@@ -16,6 +16,7 @@ export interface CardData {
   droneType?: DroneType;
   healAmount?: number;
   hits?: number;
+  isInjected?: boolean;
 }
 
 export class Card {
@@ -35,6 +36,7 @@ export class Card {
   public droneType?: DroneType;
   public healAmount?: number;
   public hits: number;
+  public isInjected: boolean;
   public isTemporary: boolean;
   public isSupercharged: boolean;
   public costModifier: number;
@@ -58,6 +60,7 @@ export class Card {
     this.droneType = data.droneType;
     this.healAmount = data.healAmount;
     this.hits = data.hits ?? 1;
+    this.isInjected = data.isInjected ?? false;
     this.isTemporary = false;
     this.isSupercharged = false;
     this.costModifier = 0;
