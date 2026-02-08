@@ -38,6 +38,8 @@ export class Card {
   public isTemporary: boolean;
   public isSupercharged: boolean;
   public costModifier: number;
+  public sourceSlot: string | null;
+  public sourceDroneType: string | null;
 
   constructor(data: CardData) {
     this.id = data.id;
@@ -59,6 +61,8 @@ export class Card {
     this.isTemporary = false;
     this.isSupercharged = false;
     this.costModifier = 0;
+    this.sourceSlot = null;
+    this.sourceDroneType = null;
   }
 
   getEffectiveCost(): number {
@@ -85,6 +89,8 @@ export class Card {
     });
     card.isTemporary = this.isTemporary;
     card.isSupercharged = this.isSupercharged;
+    card.sourceSlot = this.sourceSlot;
+    card.sourceDroneType = this.sourceDroneType;
     return card;
   }
 

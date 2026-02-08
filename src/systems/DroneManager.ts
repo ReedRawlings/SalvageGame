@@ -1,9 +1,16 @@
 import { Drone } from '../entities/Drone';
-import { DroneType } from '../utils/Constants';
+import { DroneType, EquipmentSlot } from '../utils/Constants';
+
+export type DroneEquipEvent = {
+  type: 'equip' | 'unequip';
+  drone: Drone;
+  slot: EquipmentSlot;
+};
 
 export class DroneManager {
   public activeDrones: Drone[];
   public maxSlots: number;
+  public onDroneEquipChange?: (event: DroneEquipEvent) => void;
 
   constructor(maxSlots: number) {
     this.activeDrones = [];
@@ -155,5 +162,51 @@ export class DroneManager {
       this.removeDrone(drone);
     }
     return totalDamage * 3;
+  }
+
+  equipDroneToSlot(drone: Drone, slot: EquipmentSlot): boolean {
+    if (drone.isEquipped) return false;
+
+    // If another drone is already equipped in this slot, unequip it first
+    const existing = this.activeDrones.find(d => d.isEquipped && d.equippedSlot === slot);
+    if (existing) {
+      this.unequipDroneFromSlot(slot);
+    }
+
+    drone.isEquipped = true;
+    drone.equippedSlot = slot;
+    this.onDroneEquipChange?.({ type: 'equip', drone, slot });
+    return true;
+  }
+
+  unequipDroneFromSlot(slot: EquipmentSlot): Drone | null {
+    const drone = this.activeDrones.find(d => d.isEquipped && d.equippedSlot === slot);
+    if (!drone) return null;
+
+    drone.isEquipped = false;
+    drone.equippedSlot = null;
+    this.onDroneEquipChange?.({ type: 'unequip', drone, slot });
+
+    // Return to field if capacity allows, otherwise destroy
+    if (this.getFieldDroneCount() >= this.maxSlots) {
+      this.removeDrone(drone);
+    }
+    return drone;
+  }
+
+  getDroneInSlot(slot: EquipmentSlot): Drone | null {
+    return this.activeDrones.find(d => d.isEquipped && d.equippedSlot === slot) ?? null;
+  }
+
+  unequipAllDrones(): DroneEquipEvent[] {
+    const events: DroneEquipEvent[] = [];
+    for (const drone of [...this.getEquippedDrones()]) {
+      const slot = drone.equippedSlot as EquipmentSlot;
+      drone.isEquipped = false;
+      drone.equippedSlot = null;
+      events.push({ type: 'unequip', drone, slot });
+      this.removeDrone(drone);
+    }
+    return events;
   }
 }
