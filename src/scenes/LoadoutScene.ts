@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { COLORS, GAME_WIDTH, GAME_HEIGHT, EQUIPMENT_SLOTS, EquipmentSlot, EQUIPMENT_BATTERY_MAX } from '../utils/Constants';
+import { COLORS, GAME_WIDTH, GAME_HEIGHT, EQUIPMENT_SLOTS, EquipmentSlot, EQUIPMENT_BATTERY_MAX, AUXILIARY_SLOTS } from '../utils/Constants';
 import { Player } from '../entities/Player';
 import { Equipment, EquipmentData } from '../entities/Equipment';
 import { EquipmentManager } from '../systems/EquipmentManager';
@@ -55,6 +55,9 @@ export class LoadoutScene extends Phaser.Scene {
     // Equipment slots (robot schematic layout)
     this.renderEquipmentSlots();
 
+    // Auxiliary equipment slots (right of schematic)
+    this.renderAuxiliarySlots();
+
     // Owned equipment list
     this.renderOwnedEquipment();
 
@@ -107,6 +110,25 @@ export class LoadoutScene extends Phaser.Scene {
     gfx.lineBetween(positions.head.x, positions.head.y + 20, positions.chassis.x, positions.chassis.y - 20);
     gfx.lineBetween(positions.chassis.x - 40, positions.chassis.y, positions.arms.x + 40, positions.arms.y);
     gfx.lineBetween(positions.chassis.x, positions.chassis.y + 20, positions.legs.x, positions.legs.y - 20);
+  }
+
+  private renderAuxiliarySlots(): void {
+    const baseX = GAME_WIDTH / 2 + 180;
+    const baseY = 120;
+
+    this.add.text(baseX, baseY - 35, '── AUXILIARY ──', {
+      fontFamily: 'monospace',
+      fontSize: '12px',
+      color: '#444444',
+    }).setOrigin(0.5);
+
+    for (let i = 0; i < AUXILIARY_SLOTS; i++) {
+      const y = baseY + i * 70;
+      const piece = this.player.auxiliarySlots[i];
+      const label = `AUX ${i + 1}`;
+      const container = this.createSlotUI(baseX, y, label, piece ?? undefined);
+      this.slotContainers.set(`auxiliary_${i}`, container);
+    }
   }
 
   private createSlotUI(x: number, y: number, slot: string, piece?: Equipment): Phaser.GameObjects.Container {
@@ -188,7 +210,20 @@ export class LoadoutScene extends Phaser.Scene {
       bg.setInteractive({ useHandCursor: true });
       bg.on('pointerdown', () => {
         if (piece.isAvailable()) {
-          this.player.equipPiece(piece);
+          if (piece.slot === 'auxiliary') {
+            // Equip to first available auxiliary slot
+            for (let j = 0; j < this.player.auxiliarySlots.length; j++) {
+              if (!this.player.auxiliarySlots[j]) {
+                this.player.equipAuxiliary(piece, j);
+                this.scene.restart({ newGame: false });
+                return;
+              }
+            }
+            // All full — replace slot 0
+            this.player.equipAuxiliary(piece, 0);
+          } else {
+            this.player.equipPiece(piece);
+          }
           this.scene.restart({ newGame: false });
         }
       });
@@ -251,9 +286,15 @@ export class LoadoutScene extends Phaser.Scene {
     this.infoPanel.add(battery);
 
     if (Object.keys(piece.statMods).length > 0) {
+      const statNames: Record<string, string> = {
+        health: 'HP',
+        strikeDamage: 'ATK',
+        blockDamage: 'BLK',
+      };
       let statStr = 'STATS: ';
       for (const [stat, val] of Object.entries(piece.statMods)) {
-        statStr += `${stat} +${val} `;
+        const label = statNames[stat] ?? stat;
+        statStr += `${label} ${val >= 0 ? '+' : ''}${val} `;
       }
       const stats = this.add.text(0, 120, statStr, {
         fontFamily: 'monospace',

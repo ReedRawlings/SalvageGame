@@ -1,10 +1,10 @@
-import { EquipmentSlot, EquipmentFamily, EQUIPMENT_BATTERY_MAX } from '../utils/Constants';
+import { AnyEquipmentSlot, EquipmentFamily, EQUIPMENT_BATTERY_MAX } from '../utils/Constants';
 
 export interface EquipmentData {
   id: string;
   name: string;
   family: EquipmentFamily;
-  slot: EquipmentSlot;
+  slot: AnyEquipmentSlot;
   cardIds: string[];
   description: string;
   cost: number;
@@ -16,7 +16,7 @@ export class Equipment {
   public id: string;
   public name: string;
   public family: EquipmentFamily;
-  public slot: EquipmentSlot;
+  public slot: AnyEquipmentSlot;
   public cardIds: string[];
   public description: string;
   public cost: number;

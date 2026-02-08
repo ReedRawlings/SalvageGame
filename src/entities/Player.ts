@@ -16,6 +16,8 @@ export interface PlayerState {
   cores: number;
   energyTokens: number;
   circuits: number;
+  strikeDamageBonus: number;
+  blockDamageBonus: number;
   equipment: Map<EquipmentSlot, Equipment | null>;
   auxiliarySlots: (Equipment | null)[];
   ownedEquipment: Equipment[];
@@ -36,6 +38,8 @@ export class Player {
   public equipment: Map<EquipmentSlot, Equipment | null>;
   public auxiliarySlots: (Equipment | null)[];
   public ownedEquipment: Equipment[];
+  public strikeDamageBonus: number;
+  public blockDamageBonus: number;
   public statusEffects: Map<string, number>;
   public runCount: number;
   public runDeckCardIds: string[];
@@ -53,6 +57,8 @@ export class Player {
     this.cores = 0;
     this.energyTokens = 0;
     this.circuits = 0;
+    this.strikeDamageBonus = 0;
+    this.blockDamageBonus = 0;
     this.equipment = new Map();
     this.auxiliarySlots = [null, null];
     this.ownedEquipment = [];
@@ -67,6 +73,7 @@ export class Player {
   }
 
   equipPiece(piece: Equipment): boolean {
+    if (piece.slot === 'auxiliary') return false;
     const currentInSlot = this.equipment.get(piece.slot);
     if (currentInSlot) {
       this.unequipPiece(piece.slot);
@@ -74,6 +81,27 @@ export class Player {
     this.equipment.set(piece.slot, piece);
     this.applyStatMods(piece, 1);
     return true;
+  }
+
+  equipAuxiliary(piece: Equipment, slotIndex: number): boolean {
+    if (piece.slot !== 'auxiliary') return false;
+    if (slotIndex < 0 || slotIndex >= this.auxiliarySlots.length) return false;
+    const current = this.auxiliarySlots[slotIndex];
+    if (current) {
+      this.unequipAuxiliary(slotIndex);
+    }
+    this.auxiliarySlots[slotIndex] = piece;
+    this.applyStatMods(piece, 1);
+    return true;
+  }
+
+  unequipAuxiliary(slotIndex: number): Equipment | null {
+    const piece = this.auxiliarySlots[slotIndex] ?? null;
+    if (piece) {
+      this.applyStatMods(piece, -1);
+      this.auxiliarySlots[slotIndex] = null;
+    }
+    return piece;
   }
 
   unequipPiece(slot: EquipmentSlot): Equipment | null {
@@ -91,6 +119,12 @@ export class Player {
         case 'health':
           this.maxHealth += value * multiplier;
           this.health = Math.min(this.health, this.maxHealth);
+          break;
+        case 'strikeDamage':
+          this.strikeDamageBonus += value * multiplier;
+          break;
+        case 'blockDamage':
+          this.blockDamageBonus += value * multiplier;
           break;
       }
     }
@@ -183,6 +217,8 @@ export class Player {
       cores: this.cores,
       energyTokens: this.energyTokens,
       circuits: this.circuits,
+      strikeDamageBonus: this.strikeDamageBonus,
+      blockDamageBonus: this.blockDamageBonus,
       equipment: this.equipment,
       auxiliarySlots: this.auxiliarySlots,
       ownedEquipment: this.ownedEquipment,

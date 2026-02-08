@@ -130,5 +130,15 @@
     "description": "Starter equipment. Basic drone deployment.",
     "cost": 0,
     "statMods": { "health": 5 }
+  },
+  "aux_combat_amplifier": {
+    "id": "aux_combat_amplifier",
+    "name": "Combat Amplifier",
+    "family": "drone_operator",
+    "slot": "auxiliary",
+    "cardIds": [],
+    "description": "Amplifies offensive output at the cost of defensive capability. All attacks deal +1 damage, all blocks give -1 block.",
+    "cost": 0,
+    "statMods": { "strikeDamage": 1, "blockDamage": -1 }
   }
 }

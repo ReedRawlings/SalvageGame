@@ -12,6 +12,7 @@ interface SaveData {
   runCount: number;
   ownedEquipmentIds: string[];
   equippedSlots: Record<string, string | null>;
+  auxiliarySlotIds: (string | null)[];
   equipmentBatteries: Record<string, number>;
 }
 
@@ -38,6 +39,7 @@ export class SaveManager {
       runCount: player.runCount,
       ownedEquipmentIds: player.ownedEquipment.map(e => e.id),
       equippedSlots,
+      auxiliarySlotIds: player.auxiliarySlots.map(p => p?.id ?? null),
       equipmentBatteries,
     };
 
@@ -76,6 +78,19 @@ export class SaveManager {
           const piece = player.ownedEquipment.find(e => e.id === eqId);
           if (piece && piece.isAvailable()) {
             player.equipPiece(piece);
+          }
+        }
+      }
+
+      // Restore auxiliary slots
+      if (data.auxiliarySlotIds) {
+        for (let i = 0; i < data.auxiliarySlotIds.length; i++) {
+          const eqId = data.auxiliarySlotIds[i];
+          if (eqId) {
+            const piece = player.ownedEquipment.find(e => e.id === eqId);
+            if (piece) {
+              player.equipAuxiliary(piece, i);
+            }
           }
         }
       }

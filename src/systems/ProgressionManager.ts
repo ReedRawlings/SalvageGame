@@ -80,9 +80,18 @@ export class ProgressionManager {
     return new Equipment(data);
   }
 
+  getStarterAuxiliary(): Equipment {
+    const data = (equipmentData as Record<string, EquipmentData>)['aux_combat_amplifier'];
+    return new Equipment(data);
+  }
+
   initializeNewPlayer(): void {
     const starter = this.getStarterEquipment();
     this.player.ownedEquipment.push(starter);
     this.player.equipPiece(starter);
+
+    const auxStarter = this.getStarterAuxiliary();
+    this.player.ownedEquipment.push(auxStarter);
+    this.player.equipAuxiliary(auxStarter, 0);
   }
 }

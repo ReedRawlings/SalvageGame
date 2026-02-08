@@ -84,6 +84,7 @@ export const DEPTH = {
 } as const;
 
 export type EquipmentSlot = typeof EQUIPMENT_SLOTS[number];
+export type AnyEquipmentSlot = EquipmentSlot | 'auxiliary';
 export type EquipmentFamily = 'drone_operator' | 'brawler' | 'combo_striker';
 export type CardType = 'attack' | 'defend' | 'drone' | 'utility' | 'passive';
 export type DroneType = 'attack' | 'shield' | 'repair' | 'siphon' | 'overload' | 'decoy';

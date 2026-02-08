@@ -89,16 +89,20 @@ export class CombatManager {
     this.deck.playCard(card);
     result.success = true;
 
-    // Base card effects
+    // Base card effects (apply auxiliary equipment bonuses)
     if (card.damage > 0 && targetEnemy) {
+      const bonusDamage = card.type === 'attack' ? this.player.strikeDamageBonus : 0;
+      const effectiveDamage = Math.max(0, card.damage + bonusDamage);
       const hits = card.hits || 1;
       for (let i = 0; i < hits; i++) {
-        result.damageDealt += targetEnemy.takeDamage(card.damage);
+        result.damageDealt += targetEnemy.takeDamage(effectiveDamage);
       }
     }
     if (card.block > 0) {
-      this.player.addBlock(card.block);
-      result.blockGained = card.block;
+      const bonusBlock = card.type === 'defend' ? this.player.blockDamageBonus : 0;
+      const effectiveBlock = Math.max(0, card.block + bonusBlock);
+      this.player.addBlock(effectiveBlock);
+      result.blockGained = effectiveBlock;
     }
 
     // Track attacks for combo
