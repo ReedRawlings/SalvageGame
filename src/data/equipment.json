@@ -1,0 +1,134 @@
+{
+  "do_charger_a": {
+    "id": "do_charger_a",
+    "name": "Drone Bay Expander",
+    "family": "drone_operator",
+    "slot": "charger",
+    "cardIds": ["do_charger_a"],
+    "description": "Increase max drone capacity by 1.",
+    "cost": 3,
+    "statMods": {}
+  },
+  "do_charger_b": {
+    "id": "do_charger_b",
+    "name": "Efficiency Module",
+    "family": "drone_operator",
+    "slot": "charger",
+    "cardIds": ["do_charger_b"],
+    "description": "Drones cost 1 less energy to deploy.",
+    "cost": 3,
+    "statMods": {}
+  },
+  "do_head": {
+    "id": "do_head",
+    "name": "Targeting Array",
+    "family": "drone_operator",
+    "slot": "head",
+    "cardIds": ["do_head"],
+    "description": "Direct all drones to focus fire a single target.",
+    "cost": 4,
+    "statMods": {}
+  },
+  "do_chassis_a": {
+    "id": "do_chassis_a",
+    "name": "Battery Rack",
+    "family": "drone_operator",
+    "slot": "chassis",
+    "cardIds": ["do_chassis_a"],
+    "description": "Add battery packs to extend drone duration.",
+    "cost": 3,
+    "statMods": { "health": 5 }
+  },
+  "do_chassis_b": {
+    "id": "do_chassis_b",
+    "name": "Drone Shield Matrix",
+    "family": "drone_operator",
+    "slot": "chassis",
+    "cardIds": [],
+    "description": "Passive: For every 2 drones gain 1 shield each turn.",
+    "cost": 4,
+    "statMods": { "health": 10 },
+    "passive": "drone_shield"
+  },
+  "do_legs": {
+    "id": "do_legs",
+    "name": "Scout Servos",
+    "family": "drone_operator",
+    "slot": "legs",
+    "cardIds": [],
+    "description": "Passive: Start of combat discard a card to draw one.",
+    "cost": 3,
+    "statMods": {},
+    "passive": "scout_draw"
+  },
+  "do_arms": {
+    "id": "do_arms",
+    "name": "Launcher Arms",
+    "family": "drone_operator",
+    "slot": "arms",
+    "cardIds": ["do_arms"],
+    "description": "Throw drones at enemies for massive damage.",
+    "cost": 4,
+    "statMods": {}
+  },
+  "brawler_charger": {
+    "id": "brawler_charger",
+    "name": "Power Cell",
+    "family": "brawler",
+    "slot": "charger",
+    "cardIds": ["brawler_strike"],
+    "description": "Raw power output. Adds Heavy Strike.",
+    "cost": 3,
+    "statMods": { "health": 5 }
+  },
+  "brawler_chassis": {
+    "id": "brawler_chassis",
+    "name": "Armored Plating",
+    "family": "brawler",
+    "slot": "chassis",
+    "cardIds": ["brawler_guard"],
+    "description": "Thick scrap armor. Adds Iron Guard.",
+    "cost": 4,
+    "statMods": { "health": 15 }
+  },
+  "brawler_arms": {
+    "id": "brawler_arms",
+    "name": "Piston Arms",
+    "family": "brawler",
+    "slot": "arms",
+    "cardIds": ["brawler_slam"],
+    "description": "Hydraulic punch power. Adds Power Slam.",
+    "cost": 4,
+    "statMods": {}
+  },
+  "combo_charger": {
+    "id": "combo_charger",
+    "name": "Spark Coil",
+    "family": "combo_striker",
+    "slot": "charger",
+    "cardIds": ["combo_flurry"],
+    "description": "Rapid energy cycling. Adds Flurry.",
+    "cost": 3,
+    "statMods": {}
+  },
+  "combo_arms": {
+    "id": "combo_arms",
+    "name": "Chain Whips",
+    "family": "combo_striker",
+    "slot": "arms",
+    "cardIds": ["combo_chain"],
+    "description": "Linked chain strikes. Adds Chain Strike.",
+    "cost": 4,
+    "statMods": {}
+  },
+  "starter_chassis": {
+    "id": "starter_chassis",
+    "name": "Scrap Chassis",
+    "family": "drone_operator",
+    "slot": "chassis",
+    "cardIds": ["summon_attack_drone", "summon_shield_drone"],
+    "description": "Starter equipment. Basic drone deployment.",
+    "cost": 0,
+    "statMods": { "health": 5 }
+  }
+}

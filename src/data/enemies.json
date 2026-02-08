@@ -1,0 +1,203 @@
+{
+  "scrap_rat": {
+    "id": "scrap_rat",
+    "name": "Scrap Rat",
+    "health": 20,
+    "difficulty": "easy",
+    "description": "Solo scavenger bot",
+    "pattern": [
+      { "type": "attack", "damage": 6 },
+      { "type": "defend", "block": 5 }
+    ]
+  },
+  "loose_wiring": {
+    "id": "loose_wiring",
+    "name": "Loose Wiring",
+    "health": 12,
+    "difficulty": "easy",
+    "description": "Sparking cable",
+    "pattern": [
+      { "type": "attack", "damage": 4 },
+      { "type": "attack", "damage": 4 },
+      { "type": "attack", "damage": 6 }
+    ],
+    "onAllyDeath": { "effect": "damage_boost", "amount": 3 }
+  },
+  "junk_pile": {
+    "id": "junk_pile",
+    "name": "Junk Pile",
+    "health": 25,
+    "difficulty": "easy",
+    "description": "Passive scrap heap",
+    "pattern": [
+      { "type": "summon", "summonId": "scrap_rat" },
+      { "type": "defend", "block": 3 },
+      { "type": "summon", "summonId": "scrap_rat" }
+    ]
+  },
+  "rust_mite": {
+    "id": "rust_mite",
+    "name": "Rust Mite",
+    "health": 6,
+    "difficulty": "easy",
+    "description": "Tiny swarm creature",
+    "pattern": [
+      { "type": "attack", "damage": 3 },
+      { "type": "attack", "damage": 3 }
+    ]
+  },
+  "magnet_crawler": {
+    "id": "magnet_crawler",
+    "name": "Magnet Crawler",
+    "health": 30,
+    "difficulty": "hard",
+    "description": "Disruption bot",
+    "pattern": [
+      { "type": "attack", "damage": 8 },
+      { "type": "debuff", "effect": "magnetic_pull" },
+      { "type": "attack", "damage": 10 }
+    ]
+  },
+  "welder": {
+    "id": "welder",
+    "name": "Welder",
+    "health": 35,
+    "difficulty": "hard",
+    "description": "Defensive builder",
+    "pattern": [
+      { "type": "defend", "block": 8 },
+      { "type": "defend", "block": 8 },
+      { "type": "attack", "damage": 5 }
+    ]
+  },
+  "shock_beetle": {
+    "id": "shock_beetle",
+    "name": "Shock Beetle",
+    "health": 22,
+    "difficulty": "hard",
+    "description": "Stacking debuff bug",
+    "pattern": [
+      { "type": "attack", "damage": 5, "effect": "charge_stack" },
+      { "type": "attack", "damage": 5, "effect": "charge_stack" },
+      { "type": "attack", "damage": 7, "effect": "charge_stack" }
+    ]
+  },
+  "rust_hulk": {
+    "id": "rust_hulk",
+    "name": "Rust Hulk",
+    "health": 55,
+    "difficulty": "hard",
+    "description": "Heavy solo brute",
+    "pattern": [
+      { "type": "defend", "block": 5 },
+      { "type": "attack", "damage": 14 },
+      { "type": "attack", "damage": 14, "effect": "corrosion" }
+    ]
+  },
+  "salvage_drone": {
+    "id": "salvage_drone",
+    "name": "Salvage Drone",
+    "health": 18,
+    "difficulty": "hard",
+    "description": "Healer support",
+    "pattern": [
+      { "type": "heal", "amount": 5, "target": "allies" },
+      { "type": "attack", "damage": 4 },
+      { "type": "heal", "amount": 5, "target": "allies" }
+    ]
+  },
+  "junkyard_dog": {
+    "id": "junkyard_dog",
+    "name": "Junkyard Dog",
+    "health": 40,
+    "difficulty": "hard",
+    "description": "Aggressive solo",
+    "pattern": [
+      { "type": "attack", "damage": 7 },
+      { "type": "attack", "damage": 7 },
+      { "type": "attack", "damage": 15 }
+    ]
+  },
+  "compactor": {
+    "id": "compactor",
+    "name": "Compactor",
+    "health": 80,
+    "difficulty": "elite",
+    "description": "Charging crusher",
+    "pattern": [
+      { "type": "buff", "effect": "power_up", "amount": 3 },
+      { "type": "buff", "effect": "power_up", "amount": 3 },
+      { "type": "attack", "damage": 20 },
+      { "type": "defend", "block": 0 }
+    ]
+  },
+  "voltage_king": {
+    "id": "voltage_king",
+    "name": "Voltage King",
+    "health": 85,
+    "difficulty": "elite",
+    "description": "Electrified bruiser",
+    "pattern": [
+      { "type": "defend", "block": 12, "effect": "static_shield" },
+      { "type": "defend", "block": 12 },
+      { "type": "attack", "damage": 18 },
+      { "type": "attack", "damage": 18 }
+    ]
+  },
+  "scrap_titan": {
+    "id": "scrap_titan",
+    "name": "Scrap Titan",
+    "health": 100,
+    "difficulty": "elite",
+    "description": "Multi-part construct",
+    "pattern": [
+      { "type": "attack", "damage": 10 },
+      { "type": "defend", "block": 10 },
+      { "type": "buff", "effect": "power_up", "amount": 2 },
+      { "type": "attack", "damage": 14 }
+    ],
+    "parts": ["arm", "core", "shell"]
+  },
+  "the_crusher": {
+    "id": "the_crusher",
+    "name": "The Crusher",
+    "health": 150,
+    "difficulty": "boss",
+    "description": "Hydraulic press",
+    "pattern": [
+      { "type": "buff", "effect": "crush_charge", "amount": 5 },
+      { "type": "attack", "damage": 10 },
+      { "type": "buff", "effect": "crush_charge", "amount": 5 },
+      { "type": "attack", "damage": 25 },
+      { "type": "summon", "summonId": "scrap_rat" }
+    ]
+  },
+  "junkyard_warden": {
+    "id": "junkyard_warden",
+    "name": "Junkyard Warden",
+    "health": 120,
+    "difficulty": "boss",
+    "description": "Swarm commander",
+    "pattern": [
+      { "type": "summon", "summonId": "rust_mite" },
+      { "type": "summon", "summonId": "loose_wiring" },
+      { "type": "buff", "effect": "empower_allies", "amount": 3 },
+      { "type": "attack", "damage": 8 },
+      { "type": "summon", "summonId": "scrap_rat" }
+    ]
+  },
+  "the_smelter": {
+    "id": "the_smelter",
+    "name": "The Smelter",
+    "health": 140,
+    "difficulty": "boss",
+    "description": "Card-consuming furnace",
+    "pattern": [
+      { "type": "attack", "damage": 8 },
+      { "type": "debuff", "effect": "consume_card" },
+      { "type": "attack", "damage": 12 },
+      { "type": "debuff", "effect": "consume_card" },
+      { "type": "attack", "damage": 16 }
+    ]
+  }
+}

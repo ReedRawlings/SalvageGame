@@ -1,0 +1,119 @@
+[
+  {
+    "id": "scrap_merchant",
+    "title": "Scrap Merchant",
+    "description": "A wandering trader offers to examine your equipment.",
+    "choices": [
+      {
+        "text": "Trade 10 circuits for a random card",
+        "cost": { "circuits": 10 },
+        "reward": { "randomCard": 1 }
+      },
+      {
+        "text": "Pay 5 circuits to heal 15 HP",
+        "cost": { "circuits": 5 },
+        "reward": { "heal": 15 }
+      },
+      {
+        "text": "Leave",
+        "cost": {},
+        "reward": {}
+      }
+    ]
+  },
+  {
+    "id": "abandoned_workshop",
+    "title": "Abandoned Workshop",
+    "description": "You find a dusty workshop with tools still humming.",
+    "choices": [
+      {
+        "text": "Scrap a card from your deck",
+        "cost": { "removeCard": 1 },
+        "reward": {}
+      },
+      {
+        "text": "Search for parts (gain 15 circuits)",
+        "cost": {},
+        "reward": { "circuits": 15 }
+      },
+      {
+        "text": "Rest here (heal 10 HP)",
+        "cost": {},
+        "reward": { "heal": 10 }
+      }
+    ]
+  },
+  {
+    "id": "power_surge",
+    "title": "Power Surge",
+    "description": "A sudden electrical surge courses through the junkyard.",
+    "choices": [
+      {
+        "text": "Channel the energy (+1 max energy this run)",
+        "cost": { "damage": 8 },
+        "reward": { "maxEnergy": 1 }
+      },
+      {
+        "text": "Shield yourself",
+        "cost": {},
+        "reward": {}
+      }
+    ]
+  },
+  {
+    "id": "rusty_shrine",
+    "title": "Rusty Shrine",
+    "description": "A strange altar made of welded scrap. An offering might yield something.",
+    "choices": [
+      {
+        "text": "Offer 1 CORE",
+        "cost": { "cores": 1 },
+        "reward": { "randomCard": 2, "heal": 20 }
+      },
+      {
+        "text": "Scavenge the shrine (gain 8 circuits)",
+        "cost": {},
+        "reward": { "circuits": 8 }
+      },
+      {
+        "text": "Walk away",
+        "cost": {},
+        "reward": {}
+      }
+    ]
+  },
+  {
+    "id": "drone_graveyard",
+    "title": "Drone Graveyard",
+    "description": "Deactivated drones lie scattered. Some look salvageable.",
+    "choices": [
+      {
+        "text": "Salvage drone parts (gain random drone card)",
+        "cost": {},
+        "reward": { "randomDroneCard": 1 }
+      },
+      {
+        "text": "Strip for circuits (gain 12 circuits)",
+        "cost": {},
+        "reward": { "circuits": 12 }
+      }
+    ]
+  },
+  {
+    "id": "unstable_core",
+    "title": "Unstable Core",
+    "description": "A pulsing energy core sits precariously on a pile of scrap.",
+    "choices": [
+      {
+        "text": "Grab it carefully (50% chance: gain 1 CORE or take 15 damage)",
+        "cost": {},
+        "reward": { "gamble": { "success": { "cores": 1 }, "fail": { "damage": 15 }, "chance": 0.5 } }
+      },
+      {
+        "text": "Drain it safely (gain 10 circuits)",
+        "cost": {},
+        "reward": { "circuits": 10 }
+      }
+    ]
+  }
+]

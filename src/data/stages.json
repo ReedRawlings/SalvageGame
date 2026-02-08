@@ -1,0 +1,33 @@
+{
+  "stage1": {
+    "id": "stage1",
+    "name": "The Outer Junkyard",
+    "floors": 15,
+    "easyPool": [
+      { "enemies": ["scrap_rat"] },
+      { "enemies": ["loose_wiring", "loose_wiring"] },
+      { "enemies": ["loose_wiring", "loose_wiring", "loose_wiring"] },
+      { "enemies": ["junk_pile"] },
+      { "enemies": ["rust_mite", "rust_mite", "rust_mite"] },
+      { "enemies": ["rust_mite", "rust_mite", "rust_mite", "rust_mite"] }
+    ],
+    "hardPool": [
+      { "enemies": ["magnet_crawler"] },
+      { "enemies": ["welder", "scrap_rat"] },
+      { "enemies": ["shock_beetle", "shock_beetle"] },
+      { "enemies": ["rust_hulk"] },
+      { "enemies": ["salvage_drone", "loose_wiring", "loose_wiring"] },
+      { "enemies": ["junkyard_dog"] }
+    ],
+    "elitePool": [
+      { "enemies": ["compactor"] },
+      { "enemies": ["voltage_king"] },
+      { "enemies": ["scrap_titan"] }
+    ],
+    "bossPool": [
+      { "enemies": ["the_crusher"] },
+      { "enemies": ["junkyard_warden"] },
+      { "enemies": ["the_smelter"] }
+    ]
+  }
+}

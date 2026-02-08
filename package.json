@@ -1,0 +1,19 @@
+{
+  "name": "salvage-game",
+  "private": true,
+  "version": "0.1.0",
+  "description": "A roguelite deck-building game set in a junkyard",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "phaser": "^3.80.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11"
+  }
+}
